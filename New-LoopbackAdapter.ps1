@@ -15,15 +15,19 @@ ms_server        (File and Printer Sharing for Microsoft Networks)
 ms_tcpip6        (Internet Protocol Version 6 (TCP/IPv6))
 ms_lltdio        (Link-Layer Topology Discovery Mapper I/O Driver)
 ms_rspndr        (Link-Layer Topology Discovery Responder)
-.PARAMETER IpAddressThe IP Address that has to be set on the Loopback adapter.
+.PARAMETER IpAddress
+The IP Address that has to be set on the Loopback adapter.
+.PARAMETER PrefixLength
+Specifies a prefix length. This parameter defines the local subnet size. Default 32 (255.255.255.255)
 .Link
 WDK can be downloaded here https://msdn.microsoft.com/en-us/windows/hardware/hh852365
-
-
 #>
+
 param (
-	[parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory=$false, HelpMessage="No VIP IP address specified")] 
-	[ipaddress]$IpAddress
+	[parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory=$false, HelpMessage="No IP address specified")] 
+	[ipaddress]$IpAddress,
+	[parameter(ValueFromPipeline=$false, ValueFromPipelineByPropertyName=$true, Mandatory=$false, HelpMessage="No PrefixLength specified")] 
+	[byte]$PrefixLength = 32
 	)
 
 $NIC_NAME = "Loopback"
@@ -44,7 +48,7 @@ Rename-NetAdapter -Name $eth_loopback.name -NewName $NIC_NAME
 
 # Add Ip Address
 if ($IpAddress){
-    New-NetIPAddress -InterfaceAlias $NIC_NAME -IPAddress $IpAddress -PrefixLength 32 -AddressFamily ipv4
+    New-NetIPAddress -InterfaceAlias $NIC_NAME -IPAddress $IpAddress -PrefixLength $PrefixLength -AddressFamily ipv4
 }
 Set-NetIPInterface -InterfaceIndex $eth_loopback.ifIndex -InterfaceMetric "254" -WeakHostReceive Enabled -WeakHostSend Enabled 
 
